@@ -11,10 +11,10 @@ import type { CustomFood } from '@/types'
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   serving_size: z.string().optional(),
-  calories_per_serving: z.coerce.number().nonnegative('Must be 0 or more'),
-  protein_per_serving: z.coerce.number().nonnegative('Must be 0 or more'),
-  carbs_per_serving: z.coerce.number().nonnegative('Must be 0 or more'),
-  fat_per_serving: z.coerce.number().nonnegative('Must be 0 or more'),
+  calories_per_serving: z.number().nonnegative('Must be 0 or more'),
+  protein_per_serving: z.number().nonnegative('Must be 0 or more'),
+  carbs_per_serving: z.number().nonnegative('Must be 0 or more'),
+  fat_per_serving: z.number().nonnegative('Must be 0 or more'),
 })
 
 type FormData = z.infer<typeof schema>
@@ -84,7 +84,7 @@ export function CustomFoodForm({ food, onSuccess, onCancel }: CustomFoodFormProp
             <label className="text-sm font-medium">
               {label} <span className="text-muted-foreground font-normal">({unit})</span>
             </label>
-            <Input type="number" min="0" step="0.1" {...register(name)} />
+            <Input type="number" min="0" step="0.1" {...register(name, { valueAsNumber: true })} />
             {errors[name] && (
               <p className="text-xs text-destructive">{errors[name]?.message}</p>
             )}
