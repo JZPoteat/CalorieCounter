@@ -2,12 +2,11 @@
 
 import { useState, useTransition } from 'react'
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-} from '@/components/ui/sheet'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { addFoodEntry } from '@/actions/food-entries'
@@ -66,21 +65,24 @@ export function ServingSelector({ food, onClose }: ServingSelectorProps) {
   }
 
   return (
-    <Sheet open={!!food} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="bottom" className="max-w-lg mx-auto rounded-t-xl">
-        <SheetHeader>
-          <SheetTitle className="text-base leading-snug pr-6">
+    <Dialog open={!!food} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="max-w-md"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <DialogHeader>
+          <DialogTitle className="text-base leading-snug pr-6">
             {food?.description}
-          </SheetTitle>
+          </DialogTitle>
           {food?.brandOwner && (
             <p className="text-sm text-muted-foreground">{food.brandOwner}</p>
           )}
-        </SheetHeader>
+        </DialogHeader>
 
-        <div className="py-4 space-y-4">
+        <div className="space-y-3">
           {/* Date */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Date</label>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium w-16 shrink-0">Date</label>
             <Input
               type="date"
               value={date}
@@ -91,7 +93,7 @@ export function ServingSelector({ food, onClose }: ServingSelectorProps) {
           </div>
 
           {/* Meal type */}
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-2.5">
             <label className="text-sm font-medium">Meal</label>
             <div className="flex gap-2 flex-wrap">
               {MEAL_TYPES.map((type) => (
@@ -111,21 +113,21 @@ export function ServingSelector({ food, onClose }: ServingSelectorProps) {
           </div>
 
           {/* Quantity */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">
-              Servings{' '}
-              <span className="text-muted-foreground font-normal">
-                (1 = {food?.servingLabel ?? `${food?.servingSize}${food?.servingSizeUnit}`})
-              </span>
-            </label>
-            <Input
-              type="number"
-              min="0.1"
-              step="0.1"
-              value={qty}
-              onChange={(e) => setQty(e.target.value)}
-              className="w-28"
-            />
+          <div className="space-y-1">
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium w-16 shrink-0">Servings</label>
+              <Input
+                type="number"
+                min="0.1"
+                step="0.1"
+                value={qty}
+                onChange={(e) => setQty(e.target.value)}
+                className="w-28"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground pl-20">
+              1 = {food?.servingLabel ?? `${food?.servingSize}${food?.servingSizeUnit}`}
+            </p>
           </div>
 
           {/* Live macro preview */}
@@ -142,15 +144,15 @@ export function ServingSelector({ food, onClose }: ServingSelectorProps) {
           )}
         </div>
 
-        <SheetFooter className="gap-2">
-          <Button variant="outline" onClick={onClose} disabled={isPending}>
+        <div className="flex gap-3 pt-2">
+          <Button variant="outline" onClick={onClose} disabled={isPending} className="flex-1">
             Cancel
           </Button>
           <Button onClick={handleConfirm} disabled={isPending} className="flex-1">
-            {isPending ? 'Logging…' : 'Log food'}
+            {isPending ? 'Logging...' : 'Log food'}
           </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

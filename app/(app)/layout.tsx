@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { signOut } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
 import { MobileNav } from '@/components/layout/MobileNav'
+import { ThemeToggle } from '@/components/layout/ThemeToggle'
 
 const NAV_LINKS = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -47,8 +48,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </nav>
 
           {/* User + sign out */}
-          <div className="flex items-center gap-3 ml-auto md:ml-0 shrink-0">
-            <span className="text-sm text-muted-foreground hidden lg:block">
+          <div className="flex items-center gap-1 ml-auto md:ml-0 shrink-0">
+            <ThemeToggle />
+            <span className="text-sm text-muted-foreground hidden lg:block px-2">
               {user.email}
             </span>
             <form action={signOut}>
