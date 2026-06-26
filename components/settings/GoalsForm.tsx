@@ -9,10 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 const schema = z.object({
-  calorie_goal: z.coerce.number().int().positive('Must be a positive number'),
-  protein_goal: z.coerce.number().int().positive('Must be a positive number'),
-  carbs_goal: z.coerce.number().int().positive('Must be a positive number'),
-  fat_goal: z.coerce.number().int().positive('Must be a positive number'),
+  calorie_goal: z.number().int().positive('Must be a positive number'),
+  protein_goal: z.number().int().positive('Must be a positive number'),
+  carbs_goal: z.number().int().positive('Must be a positive number'),
+  fat_goal: z.number().int().positive('Must be a positive number'),
 })
 
 type FormData = z.infer<typeof schema>
@@ -54,7 +54,7 @@ export function GoalsForm({ defaults }: GoalsFormProps) {
             id={name}
             type="number"
             min="1"
-            {...register(name)}
+            {...register(name, { valueAsNumber: true })}
           />
           {errors[name] && (
             <p className="text-xs text-destructive">{errors[name]?.message}</p>
