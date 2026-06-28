@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -10,10 +10,14 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { addFoodEntry } from '@/actions/food-entries'
+import { getWeightUnits, toBaseUnit, calcServingMultiplier } from '@/lib/serving-calc'
 import type { FoodResult } from '@/types'
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'] as const
 type MealType = (typeof MEAL_TYPES)[number]
+
+type LogMode = 'servings' | 'weight'
+type WeightUnit = 'g' | 'oz' | 'ml' | 'floz'
 
 interface ServingSelectorProps {
   food: FoodResult | null
@@ -30,12 +34,37 @@ function MacroRow({ label, value }: { label: string; value: number }) {
 }
 
 export function ServingSelector({ food, onClose }: ServingSelectorProps) {
+  const [mode, setMode] = useState<LogMode>('servings')
   const [qty, setQty] = useState('1')
+  const [weightAmount, setWeightAmount] = useState('')
+  const [weightUnit, setWeightUnit] = useState<WeightUnit>('g')
   const [mealType, setMealType] = useState<MealType>('breakfast')
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
   const [isPending, startTransition] = useTransition()
 
-  const qtyNum = Math.max(0.1, parseFloat(qty) || 1)
+  // Reset inputs when a new food is opened
+  useEffect(() => {
+    if (food) {
+      setMode('servings')
+      setQty('1')
+      setWeightAmount('')
+      const units = getWeightUnits(food)
+      setWeightUnit(units[0] ?? 'g')
+    }
+  }, [food?.fdcId, food?.customFoodId])
+
+  const weightUnits = food ? getWeightUnits(food) : []
+  const weightModeAvailable = weightUnits.length > 0 && (food?.servingSize ?? 0) > 0
+
+  // Effective multiplier
+  let qtyNum: number
+  if (mode === 'weight' && food && food.servingSize > 0) {
+    const amount = parseFloat(weightAmount) || 0
+    qtyNum = calcServingMultiplier(amount, weightUnit, food.servingSize)
+  } else {
+    qtyNum = Math.max(0.1, parseFloat(qty) || 1)
+  }
+
   const scaled = food
     ? {
         calories: Math.round(food.calories * qtyNum),
@@ -45,8 +74,14 @@ export function ServingSelector({ food, onClose }: ServingSelectorProps) {
       }
     : null
 
+  const servingLabel = food?.servingLabel ?? `${food?.servingSize}${food?.servingSizeUnit}`
+
   const handleConfirm = () => {
     if (!food || !scaled) return
+    const loggedServingSize =
+      mode === 'weight'
+        ? `${weightAmount}${weightUnit}`
+        : servingLabel
     startTransition(async () => {
       await addFoodEntry({
         food_name: food.description,
@@ -54,7 +89,7 @@ export function ServingSelector({ food, onClose }: ServingSelectorProps) {
         protein: scaled.protein,
         carbs: scaled.carbs,
         fat: scaled.fat,
-        serving_size: food.servingLabel ?? `${food.servingSize}${food.servingSizeUnit}`,
+        serving_size: loggedServingSize,
         serving_qty: qtyNum,
         meal_type: mealType,
         logged_date: date,
@@ -112,23 +147,81 @@ export function ServingSelector({ food, onClose }: ServingSelectorProps) {
             </div>
           </div>
 
-          {/* Quantity */}
-          <div className="space-y-1">
-            <div className="flex items-center gap-4">
-              <label className="text-sm font-medium w-16 shrink-0">Servings</label>
-              <Input
-                type="number"
-                min="0.1"
-                step="0.1"
-                value={qty}
-                onChange={(e) => setQty(e.target.value)}
-                className="w-28"
-              />
+          {/* Mode toggle */}
+          {weightModeAvailable && (
+            <div className="flex rounded-md border overflow-hidden text-sm">
+              <button
+                onClick={() => setMode('servings')}
+                className={`flex-1 py-1.5 transition-colors ${
+                  mode === 'servings'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-accent'
+                }`}
+              >
+                Servings
+              </button>
+              <button
+                onClick={() => setMode('weight')}
+                className={`flex-1 py-1.5 transition-colors ${
+                  mode === 'weight'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-accent'
+                }`}
+              >
+                By weight
+              </button>
             </div>
-            <p className="text-xs text-muted-foreground pl-20">
-              1 = {food?.servingLabel ?? `${food?.servingSize}${food?.servingSizeUnit}`}
-            </p>
-          </div>
+          )}
+
+          {/* Quantity inputs */}
+          {mode === 'servings' ? (
+            <div className="space-y-1">
+              <div className="flex items-center gap-4">
+                <label className="text-sm font-medium w-16 shrink-0">Servings</label>
+                <Input
+                  type="number"
+                  min="0.1"
+                  step="0.1"
+                  value={qty}
+                  onChange={(e) => setQty(e.target.value)}
+                  className="w-28"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground pl-20">
+                1 = {servingLabel}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium w-16 shrink-0">Amount</label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={weightAmount}
+                  onChange={(e) => setWeightAmount(e.target.value)}
+                  className="w-24"
+                  placeholder="0"
+                />
+                <select
+                  value={weightUnit}
+                  onChange={(e) => setWeightUnit(e.target.value as WeightUnit)}
+                  className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                >
+                  {weightUnits.map((u) => (
+                    <option key={u} value={u}>
+                      {u === 'floz' ? 'fl oz' : u}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <p className="text-xs text-muted-foreground pl-20">
+                {String.fromCharCode(8776)} {qtyNum.toFixed(2)} {qtyNum === 1 ? 'serving' : 'servings'}
+                {' '}({servingLabel} / serving)
+              </p>
+            </div>
+          )}
 
           {/* Live macro preview */}
           {scaled && (
