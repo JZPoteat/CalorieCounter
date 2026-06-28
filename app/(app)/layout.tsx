@@ -30,8 +30,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <MobileNav links={NAV_LINKS} />
 
           {/* Logo */}
-          <Link href="/dashboard" className="font-semibold text-lg shrink-0">
-            CalTracker
+          <Link href="/dashboard" className="font-semibold text-lg shrink-0 text-primary">
+            Forkast
           </Link>
 
           {/* Nav links — desktop only */}
