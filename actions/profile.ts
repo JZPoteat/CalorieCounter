@@ -3,13 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-
-const goalsSchema = z.object({
-  calorie_goal: z.number().int().positive(),
-  protein_goal: z.number().int().positive(),
-  carbs_goal: z.number().int().positive(),
-  fat_goal: z.number().int().positive(),
-})
+import { goalsSchema } from '@/lib/validations'
 
 export async function updateGoals(data: z.infer<typeof goalsSchema>) {
   const supabase = await createClient()

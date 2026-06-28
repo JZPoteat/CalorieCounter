@@ -4,20 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-
-const addFoodEntrySchema = z.object({
-  food_name: z.string().min(1),
-  calories: z.number(),
-  protein: z.number(),
-  carbs: z.number(),
-  fat: z.number(),
-  serving_size: z.string(),
-  serving_qty: z.number().positive(),
-  meal_type: z.enum(['breakfast', 'lunch', 'dinner', 'snack']),
-  source: z.enum(['api', 'custom']),
-  external_food_id: z.string().optional(),
-  logged_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-})
+import { addFoodEntrySchema } from '@/lib/validations'
 
 export async function addFoodEntry(data: z.infer<typeof addFoodEntrySchema>) {
   const supabase = await createClient()

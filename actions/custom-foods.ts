@@ -3,15 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-
-const customFoodSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  serving_size: z.string().optional(),
-  calories_per_serving: z.number().nonnegative(),
-  protein_per_serving: z.number().nonnegative(),
-  carbs_per_serving: z.number().nonnegative(),
-  fat_per_serving: z.number().nonnegative(),
-})
+import { customFoodSchema } from '@/lib/validations'
 
 type CustomFoodData = z.infer<typeof customFoodSchema>
 
