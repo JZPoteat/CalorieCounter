@@ -1,4 +1,4 @@
-# Forkast
+# Nibble
 
 A calorie and macro tracker built with Next.js and Supabase. Search the USDA food database, log meals by day and meal type, track macros against daily goals, and manage a library of custom foods.
 

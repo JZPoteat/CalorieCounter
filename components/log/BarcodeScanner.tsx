@@ -61,6 +61,9 @@ export function BarcodeScanner({ onSelect }: BarcodeScannerProps) {
         if (!res.ok) throw new Error('Lookup failed')
         const food: FoodResult = await res.json()
         onSelect(food)
+        // Reset so the user can scan another item after closing the serving selector
+        didScanRef.current = false
+        setScanState('scanning')
       } catch {
         setErrorMsg('Failed to look up barcode. Please try again.')
         setScanState('error')

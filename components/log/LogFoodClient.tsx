@@ -18,10 +18,11 @@ const BarcodeScanner = dynamic(
   },
 )
 
-type Tab = 'search' | 'custom' | 'barcode'
+type Tab = 'search' | 'custom' | 'barcode' | 'recent'
 
 interface LogFoodClientProps {
   customFoods: CustomFood[]
+  recentFoods: FoodResult[]
 }
 
 function customFoodToFoodResult(food: CustomFood): FoodResult {
@@ -40,7 +41,7 @@ function customFoodToFoodResult(food: CustomFood): FoodResult {
   }
 }
 
-export function LogFoodClient({ customFoods }: LogFoodClientProps) {
+export function LogFoodClient({ customFoods, recentFoods }: LogFoodClientProps) {
   const [activeTab, setActiveTab] = useState<Tab>('search')
   const [selectedFood, setSelectedFood] = useState<FoodResult | null>(null)
   const [customQuery, setCustomQuery] = useState('')
@@ -51,6 +52,7 @@ export function LogFoodClient({ customFoods }: LogFoodClientProps) {
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'search', label: 'Search Foods' },
+    { id: 'recent', label: 'Recent' },
     { id: 'custom', label: `My Foods (${customFoods.length})` },
     { id: 'barcode', label: 'Scan Barcode' },
   ]
@@ -108,6 +110,24 @@ export function LogFoodClient({ customFoods }: LogFoodClientProps) {
 
       {activeTab === 'barcode' && (
         <BarcodeScanner onSelect={setSelectedFood} />
+      )}
+
+      {activeTab === 'recent' && (
+        <div className="space-y-2">
+          {recentFoods.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              No food logged before today yet.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {recentFoods.map((food, i) => (
+                <li key={i}>
+                  <SearchResultCard food={food} onSelect={setSelectedFood} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
 
       <ServingSelector food={selectedFood} onClose={() => setSelectedFood(null)} />

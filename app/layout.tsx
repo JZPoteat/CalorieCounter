@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Forkast",
+  title: "Nibble",
   description: "Track your calories and macros.",
 };
 

@@ -16,7 +16,7 @@ export default async function Home() {
       {/* Nav */}
       <header className="border-b">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-          <span className="font-semibold text-lg text-primary">Forkast</span>
+          <span className="font-semibold text-lg text-primary">Nibble</span>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
               <Link href="/login">Log in</Link>
@@ -31,7 +31,7 @@ export default async function Home() {
       {/* Hero */}
       <main className="flex-1 flex flex-col items-center justify-center text-center px-4 gap-6">
         <div className="space-y-3 max-w-lg">
-          <h1 className="text-5xl font-bold tracking-tight text-primary">Forkast</h1>
+          <h1 className="text-5xl font-bold tracking-tight text-primary">Nibble</h1>
           <p className="text-xl text-muted-foreground">Fork your calories.</p>
           <p className="text-muted-foreground">
             Track what you eat, hit your macros, and stop guessing.
@@ -48,7 +48,7 @@ export default async function Home() {
       </main>
 
       <footer className="border-t py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Forkast
+        © {new Date().getFullYear()} Nibble
       </footer>
     </div>
   )

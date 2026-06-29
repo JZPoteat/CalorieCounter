@@ -40,7 +40,7 @@ export function MobileNav({ links }: { links: NavLink[] }) {
         }`}
       >
         <div className="flex items-center justify-between px-4 h-14 border-b">
-          <span className="font-semibold text-lg text-primary">Forkast</span>
+          <span className="font-semibold text-lg text-primary">Nibble</span>
           <button
             onClick={() => setOpen(false)}
             className="p-2 rounded-md hover:bg-accent transition-colors"

@@ -31,7 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
           {/* Logo */}
           <Link href="/dashboard" className="font-semibold text-lg shrink-0 text-primary">
-            Forkast
+            Nibble
           </Link>
 
           {/* Nav links — desktop only */}
