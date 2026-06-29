@@ -27,13 +27,22 @@ export async function GET(
   const p = data.product
   const n = (p.nutriments ?? {}) as Record<string, number>
 
-  // Open Food Facts stores per-100g values
-  const calories = Math.round(n['energy-kcal_100g'] ?? n['energy-kcal'] ?? 0)
-  const protein = +(n['proteins_100g'] ?? n['proteins'] ?? 0).toFixed(1)
-  const carbs = +(n['carbohydrates_100g'] ?? n['carbohydrates'] ?? 0).toFixed(1)
-  const fat = +(n['fat_100g'] ?? n['fat'] ?? 0).toFixed(1)
-
   const servingQty = p.serving_quantity ? Number(p.serving_quantity) : 100
+  // Open Food Facts stores _100g values per 100g — scale to per-serving.
+  // Prefer explicit _serving values if the product provides them.
+  const scale = servingQty / 100
+  const calories = Math.round(
+    n['energy-kcal_serving'] ?? (n['energy-kcal_100g'] ?? n['energy-kcal'] ?? 0) * scale,
+  )
+  const protein = +(
+    (n['proteins_serving'] ?? (n['proteins_100g'] ?? n['proteins'] ?? 0) * scale)
+  ).toFixed(1)
+  const carbs = +(
+    (n['carbohydrates_serving'] ?? (n['carbohydrates_100g'] ?? n['carbohydrates'] ?? 0) * scale)
+  ).toFixed(1)
+  const fat = +(
+    (n['fat_serving'] ?? (n['fat_100g'] ?? n['fat'] ?? 0) * scale)
+  ).toFixed(1)
 
   const food: FoodResult = {
     fdcId: 0,
