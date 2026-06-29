@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { addFoodEntry } from '@/actions/food-entries'
+import { addFoodEntry, updateFoodEntry } from '@/actions/food-entries'
 import { getWeightUnits, toBaseUnit, calcServingMultiplier } from '@/lib/serving-calc'
 import type { FoodResult } from '@/types'
 
@@ -22,6 +22,13 @@ type WeightUnit = 'g' | 'oz' | 'ml' | 'floz'
 interface ServingSelectorProps {
   food: FoodResult | null
   onClose: () => void
+  /** When provided, the dialog is in edit mode — pre-fills form and calls updateFoodEntry instead of addFoodEntry. */
+  editEntry?: {
+    id: string
+    serving_qty: number
+    meal_type: string | null
+    logged_date: string
+  }
 }
 
 function MacroRow({ label, value }: { label: string; value: number }) {
@@ -33,7 +40,7 @@ function MacroRow({ label, value }: { label: string; value: number }) {
   )
 }
 
-export function ServingSelector({ food, onClose }: ServingSelectorProps) {
+export function ServingSelector({ food, onClose, editEntry }: ServingSelectorProps) {
   const [mode, setMode] = useState<LogMode>('servings')
   const [qty, setQty] = useState('1')
   const [weightAmount, setWeightAmount] = useState('')
@@ -42,16 +49,24 @@ export function ServingSelector({ food, onClose }: ServingSelectorProps) {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
   const [isPending, startTransition] = useTransition()
 
-  // Reset inputs when a new food is opened
+  // Reset/pre-fill inputs when a food is opened
   useEffect(() => {
     if (food) {
       setMode('servings')
-      setQty('1')
       setWeightAmount('')
       const units = getWeightUnits(food)
       setWeightUnit(units[0] ?? 'g')
+      if (editEntry) {
+        setQty(String(editEntry.serving_qty))
+        setMealType((editEntry.meal_type as MealType) ?? 'breakfast')
+        setDate(editEntry.logged_date)
+      } else {
+        setQty('1')
+        setMealType('breakfast')
+        setDate(new Date().toISOString().split('T')[0])
+      }
     }
-  }, [food?.fdcId, food?.customFoodId])
+  }, [food?.fdcId, food?.customFoodId, editEntry?.id])
 
   const weightUnits = food ? getWeightUnits(food) : []
   const weightModeAvailable = weightUnits.length > 0 && (food?.servingSize ?? 0) > 0
@@ -83,19 +98,33 @@ export function ServingSelector({ food, onClose }: ServingSelectorProps) {
         ? `${weightAmount}${weightUnit}`
         : servingLabel
     startTransition(async () => {
-      await addFoodEntry({
-        food_name: food.description,
-        calories: scaled.calories,
-        protein: scaled.protein,
-        carbs: scaled.carbs,
-        fat: scaled.fat,
-        serving_size: loggedServingSize,
-        serving_qty: qtyNum,
-        meal_type: mealType,
-        logged_date: date,
-        source: food.customFoodId ? 'custom' : 'api',
-        external_food_id: food.customFoodId ?? String(food.fdcId),
-      })
+      if (editEntry) {
+        await updateFoodEntry(editEntry.id, {
+          calories: scaled.calories,
+          protein: scaled.protein,
+          carbs: scaled.carbs,
+          fat: scaled.fat,
+          serving_size: loggedServingSize,
+          serving_qty: qtyNum,
+          meal_type: mealType,
+          logged_date: date,
+        })
+        onClose()
+      } else {
+        await addFoodEntry({
+          food_name: food.description,
+          calories: scaled.calories,
+          protein: scaled.protein,
+          carbs: scaled.carbs,
+          fat: scaled.fat,
+          serving_size: loggedServingSize,
+          serving_qty: qtyNum,
+          meal_type: mealType,
+          logged_date: date,
+          source: food.customFoodId ? 'custom' : 'api',
+          external_food_id: food.customFoodId ?? String(food.fdcId),
+        })
+      }
     })
   }
 
@@ -242,7 +271,7 @@ export function ServingSelector({ food, onClose }: ServingSelectorProps) {
             Cancel
           </Button>
           <Button onClick={handleConfirm} disabled={isPending} className="flex-1">
-            {isPending ? 'Logging...' : 'Log food'}
+            {isPending ? (editEntry ? 'Saving...' : 'Logging...') : (editEntry ? 'Save changes' : 'Log food')}
           </Button>
         </div>
       </DialogContent>

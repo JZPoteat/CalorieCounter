@@ -35,6 +35,37 @@ export async function addFoodEntry(data: z.infer<typeof addFoodEntrySchema>) {
   }
 }
 
+export async function updateFoodEntry(
+  id: string,
+  data: {
+    calories: number
+    protein: number
+    carbs: number
+    fat: number
+    serving_size: string
+    serving_qty: number
+    meal_type: string
+    logged_date: string
+  },
+) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { error } = await supabase
+    .from('food_entries')
+    .update(data)
+    .eq('id', id)
+    .eq('user_id', user.id)
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/dashboard')
+  revalidatePath('/history')
+}
+
 export async function deleteFoodEntry(id: string) {
   const supabase = await createClient()
   const {
