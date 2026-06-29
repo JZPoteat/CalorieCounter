@@ -88,8 +88,6 @@ export function BarcodeScanner({ onSelect }: BarcodeScannerProps) {
       if (cancelled || !videoRef.current) return
 
       const reader = new BrowserMultiFormatReader()
-      // Set cleanup immediately so StrictMode double-invocation is handled
-      stopFn = () => reader.reset()
 
       const onDecode = (
         result: import('@zxing/library').Result | undefined,
