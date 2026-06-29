@@ -28,10 +28,12 @@ export function FoodSearch({ onSelect }: FoodSearchProps) {
   const [results, setResults] = useState<FoodResult[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hasSearched, setHasSearched] = useState(false)
 
   const search = useCallback(async (q: string) => {
     if (!q.trim()) {
       setResults([])
+      setHasSearched(false)
       return
     }
     setLoading(true)
@@ -46,6 +48,7 @@ export function FoodSearch({ onSelect }: FoodSearchProps) {
       setResults([])
     } finally {
       setLoading(false)
+      setHasSearched(true)
     }
   }, [])
 
@@ -70,7 +73,7 @@ export function FoodSearch({ onSelect }: FoodSearchProps) {
         <p className="text-sm text-destructive">{error}</p>
       )}
 
-      {!loading && !error && results.length === 0 && query.trim() && (
+      {!loading && !error && results.length === 0 && query.trim() && hasSearched && (
         <p className="text-sm text-muted-foreground text-center py-8">
           No results for &ldquo;{query}&rdquo;
         </p>
