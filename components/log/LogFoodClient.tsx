@@ -1,13 +1,24 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { FoodSearch } from '@/components/log/FoodSearch'
 import { ServingSelector } from '@/components/log/ServingSelector'
 import { SearchResultCard } from '@/components/log/SearchResultCard'
 import { Input } from '@/components/ui/input'
 import type { FoodResult, CustomFood } from '@/types'
 
-type Tab = 'search' | 'custom'
+const BarcodeScanner = dynamic(
+  () => import('@/components/log/BarcodeScanner').then((m) => m.BarcodeScanner),
+  {
+    ssr: false,
+    loading: () => (
+      <p className="text-sm text-muted-foreground text-center py-8">Loading scanner…</p>
+    ),
+  },
+)
+
+type Tab = 'search' | 'custom' | 'barcode'
 
 interface LogFoodClientProps {
   customFoods: CustomFood[]
@@ -41,6 +52,7 @@ export function LogFoodClient({ customFoods }: LogFoodClientProps) {
   const tabs: { id: Tab; label: string }[] = [
     { id: 'search', label: 'Search Foods' },
     { id: 'custom', label: `My Foods (${customFoods.length})` },
+    { id: 'barcode', label: 'Scan Barcode' },
   ]
 
   return (
@@ -92,6 +104,10 @@ export function LogFoodClient({ customFoods }: LogFoodClientProps) {
             </ul>
           )}
         </div>
+      )}
+
+      {activeTab === 'barcode' && (
+        <BarcodeScanner onSelect={setSelectedFood} />
       )}
 
       <ServingSelector food={selectedFood} onClose={() => setSelectedFood(null)} />
